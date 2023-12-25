@@ -1,6 +1,7 @@
 [
 	{
 		"Path": "C:/Users/lando/Desktop/Repositories/Game-Save-Sync/Client/testFolder",
-		"saveID": 12345
+		"saveID": 12345,
+		"name": "test save"
 	}
 ]

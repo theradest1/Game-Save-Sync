@@ -40,16 +40,19 @@ def zipDirectory(directory, zip_name):
                 zipf.write(file_path, os.path.relpath(file_path, directory))
     return zip_path
     
-def pushChanges(save_path):
+def pushChanges(saveName):
+    savePath = , saveID
     print("Compressing...")
-    zippedFile = zipDirectory(save_path, "temp.zip")
+    zippedFile = zipDirectory(savePath, str(saveID) + ".zip")
     print("Sending...")
     sendFile(zippedFile)
     print("Done!")
 
-while True:
-    file_path = open_file_dialog()
-    pushChanges(file_path)
+
+with open("config.json") as config:
+    while True:
+        file_path = open_file_dialog()
+        pushChanges(file_path)
     
 
 
