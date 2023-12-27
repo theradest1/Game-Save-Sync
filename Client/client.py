@@ -125,11 +125,12 @@ def loadConfig():
     global config, saves, uploadURL, downloadURL, currentIDURL
     with open(base_dir + "\\config.json", 'r') as configFile:
         allConfig = json.load(configFile)
+        print(allConfig)
         config = allConfig[1]
         
         baseURL = allConfig[0]["baseURL"]
-        uploadURL = baseURL + allConfig[0]["upload"]
-        downloadURL = baseURL + allConfig[0]["download"]
+        uploadURL = baseURL + allConfig[0]["uploadURL"]
+        downloadURL = baseURL + allConfig[0]["downloadURL"]
         currentIDURL = baseURL + allConfig[0]["getIdURL"]
         
     #this is just for displaying saves

@@ -1,20 +1,7 @@
 [
-	{
-		"baseURL": "http://localhost:3030/",
-		"uploadURL": "upload",
-		"downloadURL": "download",
-		"getIdURL": "getID"
-	},
-	[
-		{
-			"path": "C:/Users/lando/Desktop/Repositories/Game-Save-Sync/Client/testFolder",
-			"id": "2",
-			"name": null
-		},
-		{
-			"path": "C:/Users/lando/Desktop/Repositories/Game-Save-Sync/Client/testFolder",
-			"id": 2,
-			"name": "yerp"
-		}
-	]
+    {
+        "path": "C:/Users/lando/Desktop/Repositories/Game-Save-Sync/Client/testFolder",
+        "id": 2,
+        "name": "yerp"
+    }
 ]
