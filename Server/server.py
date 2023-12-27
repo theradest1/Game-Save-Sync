@@ -1,4 +1,5 @@
 from flask import Flask, request, send_from_directory
+import json
 
 app = Flask(__name__)
 port = 3030
@@ -26,5 +27,20 @@ def download_file(saveID):
     # Replace 'file_to_send.txt' with the desired name of the file sent to the client
     return send_from_directory(save_dir, str(saveID) + ".zip", as_attachment=True)
 
+@app.route('/getID')
+def giveCurrentID():
+    #get current id
+    with open(base_dir + "\\config.json", 'r') as configFile:
+        config = json.load(configFile)
+        currentID = config["currentID"]
+        
+    #save new id
+    with open(base_dir + "\\config.json", "w") as configFile:
+        config["currentID"] = config["currentID"] + 1
+        json.dump(config, configFile, indent=4)
+        
+    print("Current ID:", currentID)
+    return str(currentID)
+        
 if __name__ == '__main__':
     app.run(debug=True, port=port)

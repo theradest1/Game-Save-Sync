@@ -1,12 +1,13 @@
 import requests
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, simpledialog
 import zipfile
 import os
 import json
 
 uploadURL = 'http://localhost:3030/upload'
 downloadURL = 'http://localhost:3030/download'
+currentIDURL = 'http://localhost:3030/getID'
 config = []
 base_dir = "\\".join(__file__.split("\\")[0:-1])
 
@@ -37,6 +38,9 @@ def create_window(string_list):
 
     button2 = tk.Button(root, text="Download", command=download)
     button2.pack()
+    
+    button3 = tk.Button(root, text="Add Folder", command=addFolder)
+    button3.pack()
 
     # Status label to display information
     global status_label
@@ -109,14 +113,17 @@ def pullChanges(saveIndex):
     setStatus("Done!")
 
 def loadConfig():
-    global config    
+    global config, saves 
     with open(base_dir + "\\config.json", 'r') as configFile:
         config = json.load(configFile)
+    saves = []
+    for saveData in config:
+        saves.append(saveData["name"])
 
 def saveConfig():
     global config
     with open(base_dir + "\\config.json", 'w') as configFile:
-        json.dump(config, configFile)
+        json.dump(config, configFile, indent=4)
         
 def upload():
     selectedIndex = listbox.curselection()[0]
@@ -125,12 +132,49 @@ def upload():
 def download():
     selectedIndex = listbox.curselection()[0] 
     pullChanges(selectedIndex)
+
+def addFolder():
+    setStatus("Getting new save id...")
     
+    response = requests.get(currentIDURL) #get new ID
+    if response.status_code == 200:
+        saveID = int(response.content)
+    else:
+        print("New ID get failed, Status code:", response.status_code)
+        root.deiconify()
+        setStatus("Error - check console", False)
+        message_window.destroy
+        return
+    print("new ID: " + str(saveID))
+    
+    setStatus("Done!")
+    root.withdraw()  # Hide the main window
+    savePath = filedialog.askdirectory()
+
+    # Check if a folder was selected or dialog was canceled
+    if not savePath:
+        print("Selection canceled or no folder chosen.")
+        root.deiconify()
+        return
+    
+    saveName = simpledialog.askstring("Input", "Enter a name:")
+    
+    config.append(
+        {
+            "path": savePath,
+            "id": saveID,
+            "name": saveName
+        }
+    )
+    
+    saveConfig()
+    loadConfig()
+    
+    listbox.insert(tk.END, saveName) # update save list
+    root.deiconify() # Unhide the main window
+    root.mainloop()  # update tkinter
 
 loadConfig()
-saves = []
-for saveData in config:
-    saves.append(saveData["name"])
     
 create_window(saves)
 
