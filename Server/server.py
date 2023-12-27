@@ -16,7 +16,7 @@ def upload_file():
         return 'No selected file', 400
     
     print(file.filename)
-    file.save(file.filename)
+    file.save(save_dir + "\\" + file.filename)
     
     return 'File uploaded successfully!', 200
 

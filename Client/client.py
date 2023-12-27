@@ -8,35 +8,57 @@ import json
 uploadURL = 'http://localhost:3030/upload'
 downloadURL = 'http://localhost:3030/download'
 config = []
+base_dir = "\\".join(__file__.split("\\")[0:-1])
 
-def open_file_dialog():
+def setStatus(status, printMsg = True):
+    status_label.config(text=status)
+    root.update()
+    
+    if printMsg:
+        print(status)
+
+def create_window(string_list):
+    global root
+    # Create main window
     root = tk.Tk()
-    root.withdraw()  # Hide the main window
+    root.title("")
+    root.geometry("250x300")
 
-    file_path = filedialog.askopenfilename()  # Show file selection dialog
+    # Create a listbox to display string options
+    global listbox
+    listbox = tk.Listbox(root)
+    for item in string_list:
+        listbox.insert(tk.END, item)
+    listbox.pack()
 
-    if file_path:
-        print("Selected file:", file_path)
-        return file_path
-    else:
-        print("No file selected")
-        exit()
+    # Create buttons to trigger different functions
+    button1 = tk.Button(root, text="Upload", command=upload)
+    button1.pack()
 
+    button2 = tk.Button(root, text="Download", command=download)
+    button2.pack()
+
+    # Status label to display information
+    global status_label
+    status_label = tk.Label(root, text="Status: done")
+    status_label.pack()
+
+    # Start the GUI event loop
+    root.mainloop()
     
 def sendFile(file_path):
     with open(file_path, 'rb') as file:
-        files = {'file': (file_path.split("/")[-1], file, 'multipart/form-data')}
+        files = {'file': (file_path.split("\\")[-1], file, 'multipart/form-data')}
         response = requests.post(uploadURL, files=files)
 
-    if response.status_code == 200:
-        print("File uploaded successfully!")
-    else:
+    if response.status_code != 200:
         print("File upload failed. Status code:", response.status_code)
+        setStatus("Error - check console", False)
 
 
 def zipDirectory(directory, zip_name):
-    zip_path = os.path.abspath(zip_name)
-    with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED) as zipf:
+    zip_path = base_dir + "\\" + zip_name
+    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
         for root, _, files in os.walk(directory):
             for file in files:
                 file_path = os.path.join(root, file)
@@ -51,63 +73,65 @@ def pushChanges(saveIndex):
     saveData = config[saveIndex]
     savePath = saveData["path"]
     saveID = saveData["id"]
-    
-    print("Compressing...")
-    print(savePath)
+    setStatus("Compressing...")
     zippedFile = zipDirectory(savePath, str(saveID) + ".zip")
-    print("Sending...")
-    #sendFile(zippedFile)
-    print("Deleteing...")
+    setStatus("Sending...")
+    sendFile(zippedFile)
+    setStatus("Cleaning up...")
     os.remove(zippedFile)
-    print("Done!")
+    setStatus("Done!")
 
 def pullChanges(saveIndex):
     saveID = config[saveIndex]["id"]
-    print("Sending request for " + config[saveIndex]["name"])
+    setStatus("Requesting...")
     response = requests.get(downloadURL + "/" + str(saveID))
-
+    
     if response.status_code == 200:
-        with open(str(saveID) + ".zip", 'wb') as file:
+        zippedFileDir = base_dir + "\\" + str(saveID) + ".zip"
+        with open(zippedFileDir, 'wb') as file:
             file.write(response.content)
-        print(f"File '{str(saveID)}.zip' downloaded successfully!")
     else:
         print("File download failed. Status code:", response.status_code)
+        setStatus("Error - check console", False)
+        return
     
     saveDir = config[saveIndex]["path"]
-    print(saveDir)
-    unzipFile(str(saveID) + ".zip", saveDir)
+    setStatus("Cleaning old save...")
+    for filename in os.listdir(saveDir):
+        file_path = os.path.join(saveDir, filename)
+        if os.path.isfile(file_path):
+            os.unlink(file_path)  # Delete the file
+    
+    setStatus("Unzipping...")
+    unzipFile(zippedFileDir, saveDir)
+    setStatus("Cleaning up...")
+    os.remove(zippedFileDir)
+    setStatus("Done!")
 
 def loadConfig():
     global config    
-    with open("config.json", 'r') as configFile:
+    with open(base_dir + "\\config.json", 'r') as configFile:
         config = json.load(configFile)
 
 def saveConfig():
     global config
-    with open("config.json", 'w') as configFile:
+    with open(base_dir + "\\config.json", 'w') as configFile:
         json.dump(config, configFile)
-
-def printOptions(options):
-    count = 0
-    for option in options:
-        print(str(count) + ": " + option)
-        count += 1
+        
+def upload():
+    selectedIndex = listbox.curselection()[0]
+    pushChanges(selectedIndex)
+    
+def download():
+    selectedIndex = listbox.curselection()[0] 
+    pullChanges(selectedIndex)
+    
 
 loadConfig()
-while True:
-    action = input("push or pull save: ")
+saves = []
+for saveData in config:
+    saves.append(saveData["name"])
     
-    saves = []
-    for saveData in config:
-        saves.append(saveData["name"])
-    
-    if action == "push":
-        printOptions(saves)
-        pushChanges(int(input("? ")))
-    elif action == "pull":
-        printOptions(saves)
-        pullChanges(int(input("? ")))
-    else:
-        print("unknown command")
+create_window(saves)
 
 
