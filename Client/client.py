@@ -23,7 +23,7 @@ def create_window(string_list):
     # Create main window
     root = tk.Tk()
     root.title("")
-    #root.geometry("250x300")
+    #root.geometry("300x300")
 
     # Create a listbox to display string options
     global listbox
@@ -155,7 +155,32 @@ def saveInfo():
     simpledialog.messagebox.showinfo(f"Save Info",f"Name: {saveName}\n\nID: {saveID}\n\nPath: {savePath}")
     
 def addID():
-    setStatus("Not implimented yet UwU")
+    
+    savePath = filedialog.askdirectory()
+
+    # Check if a folder was selected or dialog was canceled
+    if not savePath:
+        print("Selection canceled or no folder chosen.")
+        root.deiconify()
+        return
+    
+    saveID = int(simpledialog.askstring("Input", "Enter the ID (from your friend):"))
+    saveName = simpledialog.askstring("Input", "Enter the name (anything):")
+    
+    config.append(
+        {
+            "path": savePath,
+            "id": saveID,
+            "name": saveName
+        }
+    )
+    
+    saveConfig()
+    loadConfig()
+    
+    listbox.insert(tk.END, saveName) # update save list
+    
+    
     
 def removeSave():
     selectedIndex = listbox.curselection()[0]
@@ -185,7 +210,7 @@ def addFolder():
 
     # Check if a folder was selected or dialog was canceled
     if not savePath:
-        print("Selection canceled or no folder chosen.")
+        setStatus("Selection canceled or no folder chosen.")
         root.deiconify()
         return
     
