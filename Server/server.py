@@ -2,6 +2,8 @@ from flask import Flask, request, send_from_directory
 
 app = Flask(__name__)
 port = 3030
+base_dir = "\\".join(__file__.split("\\")[0:-1])
+save_dir = base_dir + "\\Saves"
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -22,8 +24,7 @@ def upload_file():
 def download_file(saveID):
     print("Client requested save with ID", saveID)
     # Replace 'file_to_send.txt' with the desired name of the file sent to the client
-    directory = "C:\\Users\\lando\\Desktop\\Repositories\\Game-Save-Sync\\Server\\Saves\\"
-    return send_from_directory(directory, str(saveID) + ".zip", as_attachment=True)
+    return send_from_directory(save_dir, str(saveID) + ".zip", as_attachment=True)
 
 if __name__ == '__main__':
     app.run(debug=True, port=port)

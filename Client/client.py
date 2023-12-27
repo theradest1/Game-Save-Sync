@@ -73,7 +73,9 @@ def pullChanges(saveIndex):
     else:
         print("File download failed. Status code:", response.status_code)
     
-    unzipFile(str(saveID) + ".zip", "")
+    saveDir = config[saveIndex]["path"]
+    print(saveDir)
+    unzipFile(str(saveID) + ".zip", saveDir)
 
 def loadConfig():
     global config    
