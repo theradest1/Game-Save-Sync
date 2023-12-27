@@ -23,7 +23,7 @@ def create_window(string_list):
     # Create main window
     root = tk.Tk()
     root.title("")
-    root.geometry("250x300")
+    #root.geometry("250x300")
 
     # Create a listbox to display string options
     global listbox
@@ -44,8 +44,15 @@ def create_window(string_list):
     button3 = tk.Button(root, text="Add Folder", command=addFolder)
     button3.pack()
     
+    button6 = tk.Button(root, text="Add ID", command=addID)
+    button6.pack()
+    
     button4 = tk.Button(root, text="Save Info", command=saveInfo)
     button4.pack()
+    
+    button5 = tk.Button(root, text="Remove save", command=removeSave)
+    button5.pack()
+    
 
     # Status label to display information
     global status_label
@@ -146,6 +153,17 @@ def saveInfo():
     saveID = config[selectedIndex]["id"]
     savePath = config[selectedIndex]["path"]
     simpledialog.messagebox.showinfo(f"Save Info",f"Name: {saveName}\n\nID: {saveID}\n\nPath: {savePath}")
+    
+def addID():
+    setStatus("Not implimented yet UwU")
+    
+def removeSave():
+    selectedIndex = listbox.curselection()[0]
+    del config[selectedIndex]
+    saveConfig()
+    loadConfig()
+    listbox.delete(selectedIndex) #update gui
+    setStatus("Done!")
 
 def addFolder():
     setStatus("Getting new save id...")
