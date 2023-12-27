@@ -3,8 +3,11 @@ import tkinter as tk
 from tkinter import filedialog
 import zipfile
 import os
+import json
 
-url = 'http://localhost:3030/upload'  # Replace with the server URL you want to send the file to
+uploadURL = 'http://localhost:3030/upload'
+downloadURL = 'http://localhost:3030/download'
+config = []
 
 def open_file_dialog():
     root = tk.Tk()
@@ -23,7 +26,7 @@ def open_file_dialog():
 def sendFile(file_path):
     with open(file_path, 'rb') as file:
         files = {'file': (file_path.split("/")[-1], file, 'multipart/form-data')}
-        response = requests.post(url, files=files)
+        response = requests.post(uploadURL, files=files)
 
     if response.status_code == 200:
         print("File uploaded successfully!")
@@ -40,19 +43,63 @@ def zipDirectory(directory, zip_name):
                 zipf.write(file_path, os.path.relpath(file_path, directory))
     return zip_path
     
-def pushChanges(saveName):
-    savePath = , saveID
+def pushChanges(saveIndex):
+    saveData = config[saveIndex]
+    savePath = saveData["path"]
+    saveID = saveData["id"]
+    
     print("Compressing...")
+    print(savePath)
     zippedFile = zipDirectory(savePath, str(saveID) + ".zip")
     print("Sending...")
-    sendFile(zippedFile)
+    #sendFile(zippedFile)
+    print("Deleteing...")
+    os.remove(zippedFile)
     print("Done!")
 
+def pullChanges(saveIndex):
+    saveID = config[saveIndex]["id"]
+    print("Sending request for " + config[saveIndex]["name"])
+    response = requests.get(downloadURL + "/" + str(saveID))
 
-with open("config.json") as config:
-    while True:
-        file_path = open_file_dialog()
-        pushChanges(file_path)
+    if response.status_code == 200:
+        with open({filename}, 'wb') as file:
+            file.write(response.content)
+        print(f"File '{filename}' downloaded successfully!")
+    else:
+        print("File download failed. Status code:", response.status_code)
+
+def loadConfig():
+    global config    
+    with open("config.json", 'r') as configFile:
+        config = json.load(configFile)
+
+def saveConfig():
+    global config
+    with open("config.json", 'w') as configFile:
+        json.dump(config, configFile)
+
+def printOptions(options):
+    count = 0
+    for option in options:
+        print(str(count) + ": " + option)
+        count += 1
+
+loadConfig()
+while True:
+    action = input("push or pull save: ")
     
+    saves = []
+    for saveData in config:
+        saves.append(saveData["name"])
+    
+    if action == "push":
+        printOptions(saves)
+        pushChanges(int(input("? ")))
+    elif action == "pull":
+        printOptions(saves)
+        pullChanges(int(input("? ")))
+    else:
+        print("unknown command")
 
 
