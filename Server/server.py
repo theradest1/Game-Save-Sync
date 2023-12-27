@@ -4,7 +4,12 @@ import json
 app = Flask(__name__)
 port = 3030
 base_dir = "\\".join(__file__.split("\\")[0:-1])
-save_dir = base_dir + "\\Saves"
+
+#get save directory
+with open(base_dir + "\\config.json", 'r') as configFile:
+    config = json.load(configFile)
+    save_dir = config["saveDir"]
+
 
 @app.route('/upload', methods=['POST'])
 def upload_file():

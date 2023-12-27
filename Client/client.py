@@ -31,6 +31,8 @@ def create_window(string_list):
     for item in string_list:
         listbox.insert(tk.END, item)
     listbox.pack()
+    
+    listbox.selection_set(0)
 
     # Create buttons to trigger different functions
     button1 = tk.Button(root, text="Upload", command=upload)
@@ -41,6 +43,9 @@ def create_window(string_list):
     
     button3 = tk.Button(root, text="Add Folder", command=addFolder)
     button3.pack()
+    
+    button4 = tk.Button(root, text="Save Info", command=saveInfo)
+    button4.pack()
 
     # Status label to display information
     global status_label
@@ -116,6 +121,8 @@ def loadConfig():
     global config, saves 
     with open(base_dir + "\\config.json", 'r') as configFile:
         config = json.load(configFile)
+        
+    #this is just for displaying saves
     saves = []
     for saveData in config:
         saves.append(saveData["name"])
@@ -132,6 +139,13 @@ def upload():
 def download():
     selectedIndex = listbox.curselection()[0] 
     pullChanges(selectedIndex)
+    
+def saveInfo():
+    selectedIndex = listbox.curselection()[0]
+    saveName = config[selectedIndex]["name"]
+    saveID = config[selectedIndex]["id"]
+    savePath = config[selectedIndex]["path"]
+    simpledialog.messagebox.showinfo(f"Save Info",f"Name: {saveName}\n\nID: {saveID}\n\nPath: {savePath}")
 
 def addFolder():
     setStatus("Getting new save id...")
