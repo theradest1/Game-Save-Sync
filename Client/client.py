@@ -42,6 +42,10 @@ def zipDirectory(directory, zip_name):
                 file_path = os.path.join(root, file)
                 zipf.write(file_path, os.path.relpath(file_path, directory))
     return zip_path
+
+def unzipFile(zip_file, extract_to):
+    with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+        zip_ref.extractall(extract_to)
     
 def pushChanges(saveIndex):
     saveData = config[saveIndex]
@@ -63,11 +67,13 @@ def pullChanges(saveIndex):
     response = requests.get(downloadURL + "/" + str(saveID))
 
     if response.status_code == 200:
-        with open({filename}, 'wb') as file:
+        with open(str(saveID) + ".zip", 'wb') as file:
             file.write(response.content)
-        print(f"File '{filename}' downloaded successfully!")
+        print(f"File '{str(saveID)}.zip' downloaded successfully!")
     else:
         print("File download failed. Status code:", response.status_code)
+    
+    unzipFile(str(saveID) + ".zip", "")
 
 def loadConfig():
     global config    
