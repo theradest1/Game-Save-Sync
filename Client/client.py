@@ -5,9 +5,6 @@ import zipfile
 import os
 import json
 
-uploadURL = 'http://localhost:3030/upload'
-downloadURL = 'http://localhost:3030/download'
-currentIDURL = 'http://localhost:3030/getID'
 config = []
 base_dir = "\\".join(__file__.split("\\")[0:-1])
 
@@ -125,9 +122,15 @@ def pullChanges(saveIndex):
     setStatus("Done!")
 
 def loadConfig():
-    global config, saves 
+    global config, saves, uploadURL, downloadURL, currentIDURL
     with open(base_dir + "\\config.json", 'r') as configFile:
-        config = json.load(configFile)
+        allConfig = json.load(configFile)
+        config = allConfig[1]
+        
+        baseURL = allConfig[0]["baseURL"]
+        uploadURL = baseURL + allConfig[0]["upload"]
+        downloadURL = baseURL + allConfig[0]["download"]
+        currentIDURL = baseURL + allConfig[0]["getIdURL"]
         
     #this is just for displaying saves
     saves = []
@@ -135,7 +138,6 @@ def loadConfig():
         saves.append(saveData["name"])
 
 def saveConfig():
-    global config
     with open(base_dir + "\\config.json", 'w') as configFile:
         json.dump(config, configFile, indent=4)
         
