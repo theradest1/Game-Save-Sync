@@ -50,6 +50,9 @@ def create_window(string_list):
     button5 = tk.Button(root, text="Remove save", command=removeSave)
     button5.pack()
     
+    button6 = tk.Button(root, text="Set server", command=setServer)
+    button6.pack()
+    
 
     # Status label to display information
     global status_label
@@ -122,7 +125,7 @@ def pullChanges(saveIndex):
     setStatus("Done!")
 
 def loadConfig():
-    global config, saves, uploadURL, downloadURL, currentIDURL
+    global config, saves, uploadURL, downloadURL, currentIDURL, infoURL
     with open(base_dir + "\\config.json", 'r') as configFile:
         allConfig = json.load(configFile)
         print(allConfig)
@@ -131,7 +134,8 @@ def loadConfig():
         baseURL = allConfig[0]["baseURL"]
         uploadURL = baseURL + allConfig[0]["uploadURL"]
         downloadURL = baseURL + allConfig[0]["downloadURL"]
-        currentIDURL = baseURL + allConfig[0]["getIdURL"]
+        currentIDURL = baseURL + allConfig[0]["getIDURL"]
+        infoURL = baseURL + allConfig[0]["infoURL"]
         
     #this is just for displaying saves
     saves = []
@@ -139,8 +143,11 @@ def loadConfig():
         saves.append(saveData["name"])
 
 def saveConfig():
+    with open(base_dir + "\\config.json", 'r') as configFile:
+        allConfig = json.load(configFile)
     with open(base_dir + "\\config.json", 'w') as configFile:
-        json.dump(config, configFile, indent=4)
+        allConfig[1] = config
+        json.dump(allConfig, configFile, indent=4)
         
 def upload():
     selectedIndex = listbox.curselection()[0]
@@ -151,11 +158,26 @@ def download():
     pullChanges(selectedIndex)
     
 def saveInfo():
+    setStatus("Getting save info...")
+    
     selectedIndex = listbox.curselection()[0]
     saveName = config[selectedIndex]["name"]
     saveID = config[selectedIndex]["id"]
     savePath = config[selectedIndex]["path"]
-    simpledialog.messagebox.showinfo(f"Save Info",f"Name: {saveName}\n\nID: {saveID}\n\nPath: {savePath}")
+    
+    response = requests.get(infoURL + "/" + str(saveID))
+    
+    if response.status_code != 200:
+        print("Info get failed", response.status_code)
+        setStatus("Couldnt get external save info", False)
+        lastDownload = "idk"
+        lastUpload = "idk"
+    else:
+        setStatus("Done!")
+        lastDownload = response.text.split("\n")[0]
+        lastUpload = response.text.split("\n")[1]
+    
+    simpledialog.messagebox.showinfo(f"Save Info",f"Name: {saveName}\n\nID: {saveID}\n\nPath: {savePath}\n\nLast upload to server: {lastUpload}\n\nLast download from server: {lastDownload}")
     
 def addID():
     
@@ -183,8 +205,6 @@ def addID():
     
     listbox.insert(tk.END, saveName) # update save list
     
-    
-    
 def removeSave():
     selectedIndex = listbox.curselection()[0]
     del config[selectedIndex]
@@ -192,6 +212,18 @@ def removeSave():
     loadConfig()
     listbox.delete(selectedIndex) #update gui
     setStatus("Done!")
+    
+def setServer():
+    serverIP = simpledialog.askstring("Input", "Enter server's IP:")
+    serverPort = simpledialog.askstring("Input", "Enter server's port:")
+    
+    baseURL = f"http://{serverIP}:{serverPort}/"
+    
+    with open(base_dir + "\\config.json", 'r') as configFile:
+        allConfig = json.load(configFile)
+    with open(base_dir + "\\config.json", 'w') as configFile:
+        allConfig[0]["baseURL"] = baseURL
+        json.dump(allConfig, configFile, indent=4)
 
 def addFolder():
     setStatus("Getting new save id...")

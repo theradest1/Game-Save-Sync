@@ -1,7 +1,16 @@
 [
     {
-        "path": "C:/Users/lando/Desktop/Repositories/Game-Save-Sync/Client/testFolder",
-        "id": 2,
-        "name": "yerp"
-    }
+        "baseURL": "http://localhost:3030/",
+        "uploadURL": "upload",
+        "downloadURL": "download",
+        "getIDURL": "getID",
+        "infoURL": "getInfo"
+    },
+    [
+        {
+            "path": "C:/Users/landonbakken/Documents/GitHub/Game-Save-Sync/Client/testFolder",
+            "id": 3,
+            "name": "yoink"
+        }
+    ]
 ]
