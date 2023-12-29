@@ -1,14 +1,15 @@
 [
     {
-        "currentID": 4,
-        "saveDir": "c:\\Users\\landonbakken\\Documents\\GitHub\\Game-Save-Sync\\Server\\Saves"
+        "currentID": 5,
+        "saveDir": "/home/landonbakken/Documents/GitHub/Game-Save-Sync/Server/Saves"
     },
     {
         "lastDownload": {
             "3": "2023-12-27 23:42:36"
         },
         "lastUpload": {
-            "3": "2023-12-27 23:42:13"
+            "3": "2023-12-27 23:42:13",
+            "4": "2023-12-29 01:07:06"
         }
     }
 ]

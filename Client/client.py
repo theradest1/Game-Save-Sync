@@ -6,7 +6,18 @@ import os
 import json
 
 config = []
-base_dir = "\\".join(__file__.split("\\")[0:-1])
+
+if os.name == 'nt':  # 'nt' represents Windows
+    print("Running on Windows")
+    dirSeperator = "\\"
+elif os.name == 'posix':  # 'posix' represents Linux, Unix, or macOS
+    print("Running on Linux or Unix")
+    dirSeperator = "/"
+else:
+    print("Running on an unknown system (directories will prolly be messed up)")
+    dirSeperator = "/"
+base_dir = dirSeperator.join(__file__.split(dirSeperator)[0:-1])
+config_dir = base_dir + dirSeperator + "config.json"
 
 def setStatus(status, printMsg = True):
     status_label.config(text=status)
@@ -64,7 +75,7 @@ def create_window(string_list):
     
 def sendFile(file_path):
     with open(file_path, 'rb') as file:
-        files = {'file': (file_path.split("\\")[-1], file, 'multipart/form-data')}
+        files = {'file': (file_path.split(dirSeperator)[-1], file, 'multipart/form-data')}
         response = requests.post(uploadURL, files=files)
 
     if response.status_code != 200:
@@ -73,7 +84,7 @@ def sendFile(file_path):
 
 
 def zipDirectory(directory, zip_name):
-    zip_path = base_dir + "\\" + zip_name
+    zip_path = base_dir + dirSeperator + zip_name
     with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
         for root, _, files in os.walk(directory):
             for file in files:
@@ -103,7 +114,7 @@ def pullChanges(saveIndex):
     response = requests.get(downloadURL + "/" + str(saveID))
     
     if response.status_code == 200:
-        zippedFileDir = base_dir + "\\" + str(saveID) + ".zip"
+        zippedFileDir = base_dir + dirSeperator + str(saveID) + ".zip"
         with open(zippedFileDir, 'wb') as file:
             file.write(response.content)
     else:
@@ -126,7 +137,7 @@ def pullChanges(saveIndex):
 
 def loadConfig():
     global config, saves, uploadURL, downloadURL, currentIDURL, infoURL
-    with open(base_dir + "\\config.json", 'r') as configFile:
+    with open(config_dir, 'r') as configFile:
         allConfig = json.load(configFile)
         print(allConfig)
         config = allConfig[1]
@@ -143,9 +154,9 @@ def loadConfig():
         saves.append(saveData["name"])
 
 def saveConfig():
-    with open(base_dir + "\\config.json", 'r') as configFile:
+    with open(config_dir, 'r') as configFile:
         allConfig = json.load(configFile)
-    with open(base_dir + "\\config.json", 'w') as configFile:
+    with open(config_dir, 'w') as configFile:
         allConfig[1] = config
         json.dump(allConfig, configFile, indent=4)
         
@@ -219,9 +230,9 @@ def setServer():
     
     baseURL = f"http://{serverIP}:{serverPort}/"
     
-    with open(base_dir + "\\config.json", 'r') as configFile:
+    with open(config_dir, 'r') as configFile:
         allConfig = json.load(configFile)
-    with open(base_dir + "\\config.json", 'w') as configFile:
+    with open(config_dir, 'w') as configFile:
         allConfig[0]["baseURL"] = baseURL
         json.dump(allConfig, configFile, indent=4)
 
