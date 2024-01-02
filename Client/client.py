@@ -5,6 +5,9 @@ import zipfile
 import os
 import json
 
+#create exe with:
+#pyinstaller client.py --onefile -w
+
 config = []
 
 if os.name == 'nt':  # 'nt' represents Windows
@@ -16,8 +19,8 @@ elif os.name == 'posix':  # 'posix' represents Linux, Unix, or macOS
 else:
     print("Running on an unknown system (directories will prolly be messed up)")
     dirSeperator = "/"
-base_dir = dirSeperator.join(__file__.split(dirSeperator)[0:-1])
-config_dir = base_dir + dirSeperator + "config.json"
+base_dir = "./"
+config_dir = base_dir + "config.json"
 
 def setStatus(status, printMsg = True):
     status_label.config(text=status)
@@ -31,7 +34,7 @@ def create_window(string_list):
     # Create main window
     root = tk.Tk()
     root.title("")
-    #root.geometry("300x300")
+    root.geometry("300x400")
 
     # Create a listbox to display string options
     global listbox
