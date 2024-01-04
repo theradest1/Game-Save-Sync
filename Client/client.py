@@ -64,8 +64,9 @@ def create_window(string_list):
     button5 = tk.Button(root, text="Remove save", command=removeSave)
     button5.pack()
     
-    button6 = tk.Button(root, text="Set server", command=setServer)
-    button6.pack()
+    #will add this back if I make an installer (just edit config for now)
+    #button6 = tk.Button(root, text="Set server", command=setServer)
+    #button6.pack()
     
 
     # Status label to display information
@@ -137,24 +138,47 @@ def pullChanges(saveIndex):
     setStatus("Cleaning up...")
     os.remove(zippedFileDir)
     setStatus("Done!")
+    
+def findServer(possibleURLs):
+    global baseURL, uploadURL, downloadURL, currentIDURL, infoURL
+    
+    setStatus("Finding server...")
+    print(possibleURLs)
+    for possibleURL in possibleURLs:
+        requests.get(possibleURL + "ping")
+        if response.status_code == 200 and response.content == "pong":
+            baseURL = possibleURLs
+            setStatus("Done! (" + baseURL + ")")
+            uploadURL = baseURL + uploadKey
+            downloadURL = baseURL + downloadKey
+            currentIDURL = baseURL + currentIDKey
+            infoURL = baseURL + infoKey
+            return
+        else:
+            setStatus(possibleURL + " is offline, checking next...")
+            return
+    setStatus("Could not find an online server ):")
 
 def loadConfig():
-    global config, saves, uploadURL, downloadURL, currentIDURL, infoURL
+    global config, saves
     with open(config_dir, 'r') as configFile:
         allConfig = json.load(configFile)
         print(allConfig)
         config = allConfig[1]
+        uploadKey = allConfig[0]["uploadURL"]
+        downloadKey = allConfig[0]["downloadURL"]
+        currentIDKey = allConfig[0]["getIDURL"]
+        infoKey = allConfig[0]["infoURL"]
         
-        baseURL = allConfig[0]["baseURL"]
-        uploadURL = baseURL + allConfig[0]["uploadURL"]
-        downloadURL = baseURL + allConfig[0]["downloadURL"]
-        currentIDURL = baseURL + allConfig[0]["getIDURL"]
-        infoURL = baseURL + allConfig[0]["infoURL"]
+        baseURLs = allConfig[0]["baseURLs"]
+        print(baseURLs)
         
     #this is just for displaying saves
     saves = []
     for saveData in config:
         saves.append(saveData["name"])
+    
+    return baseURLs
 
 def saveConfig():
     with open(config_dir, 'r') as configFile:
@@ -280,8 +304,6 @@ def addFolder():
     root.deiconify() # Unhide the main window
     root.mainloop()  # update tkinter
 
-loadConfig()
-    
+baseURLs = loadConfig()
 create_window(saves)
-
-
+findServer(baseURLs)
