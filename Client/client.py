@@ -6,6 +6,7 @@ import os
 import json
 
 #create exe with:
+#pip install pyinstaller
 #pyinstaller client.py --onefile -w
 
 config = []
@@ -30,11 +31,14 @@ def setStatus(status, printMsg = True):
         print(status)
 
 def create_window(string_list):
-    global root
+    global root, server_label, status_label
     # Create main window
     root = tk.Tk()
     root.title("")
     root.geometry("300x400")
+    
+    server_label = tk.Label(root, text="Server: loading...")
+    server_label.pack()
 
     # Create a listbox to display string options
     global listbox
@@ -68,14 +72,8 @@ def create_window(string_list):
     #button6 = tk.Button(root, text="Set server", command=setServer)
     #button6.pack()
     
-
-    # Status label to display information
-    global status_label
     status_label = tk.Label(root, text="Status: done")
     status_label.pack()
-
-    # Start the GUI event loop
-    root.mainloop()
     
 def sendFile(file_path):
     with open(file_path, 'rb') as file:
@@ -143,12 +141,25 @@ def findServer(possibleURLs):
     global baseURL, uploadURL, downloadURL, currentIDURL, infoURL
     
     setStatus("Finding server...")
-    print(possibleURLs)
+    print("URLs:")
     for possibleURL in possibleURLs:
-        requests.get(possibleURL + "ping")
-        if response.status_code == 200 and response.content == "pong":
-            baseURL = possibleURLs
-            setStatus("Done! (" + baseURL + ")")
+        print(possibleURL)
+        worked = False
+        text = ""
+        try:
+            response = requests.get(possibleURL + "ping", timeout=maxPingSeconds)
+            worked = True
+            text = response.text
+        except:
+            setStatus(possibleURL + " is offline, checking next...")
+        
+        if worked and text == "pong":
+            baseURL = possibleURL
+            setStatus("Done!")
+            
+            server_label.config(text="Server: " + baseURL)
+            root.update()
+            
             uploadURL = baseURL + uploadKey
             downloadURL = baseURL + downloadKey
             currentIDURL = baseURL + currentIDKey
@@ -156,22 +167,26 @@ def findServer(possibleURLs):
             return
         else:
             setStatus(possibleURL + " is offline, checking next...")
-            return
+        
+            
     setStatus("Could not find an online server ):")
+    server_label.config(text="None ):")
+    root.update()
 
 def loadConfig():
-    global config, saves
+    global config, saves, uploadKey, downloadKey, currentIDKey, infoKey, maxPingSeconds
     with open(config_dir, 'r') as configFile:
         allConfig = json.load(configFile)
-        print(allConfig)
-        config = allConfig[1]
-        uploadKey = allConfig[0]["uploadURL"]
-        downloadKey = allConfig[0]["downloadURL"]
-        currentIDKey = allConfig[0]["getIDURL"]
-        infoKey = allConfig[0]["infoURL"]
         
-        baseURLs = allConfig[0]["baseURLs"]
-        print(baseURLs)
+        config = allConfig[1]
+        
+        settingsConfig = allConfig[0]
+        maxPingSeconds = settingsConfig["maxPingSeconds"]
+        uploadKey = settingsConfig["uploadURL"]
+        downloadKey = settingsConfig["downloadURL"]
+        currentIDKey = settingsConfig["getIDURL"]
+        infoKey = settingsConfig["infoURL"]
+        baseURLs = settingsConfig["baseURLs"]
         
     #this is just for displaying saves
     saves = []
@@ -307,3 +322,4 @@ def addFolder():
 baseURLs = loadConfig()
 create_window(saves)
 findServer(baseURLs)
+root.mainloop()

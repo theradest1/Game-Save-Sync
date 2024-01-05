@@ -42,6 +42,10 @@ def upload_file():
     
     return 'File uploaded successfully!', 200
 
+@app.route('/ping')
+def ping():
+    return 'pong', 200
+
 @app.route('/download/<saveID>')
 def download_file(saveID):
     #print("Client requested save with ID", saveID)

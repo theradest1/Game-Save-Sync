@@ -5,6 +5,7 @@
             "http://75.100.205.73:3030/",
             "http://localhost:3030/"
         ],
+        "maxPingSeconds": 4,
         "uploadURL": "upload",
         "downloadURL": "download",
         "getIDURL": "getID",
