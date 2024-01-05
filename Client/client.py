@@ -11,6 +11,22 @@ import json
 
 config = []
 
+#the config if it is missing or smthing
+defaultConfig = [
+    {
+        "baseURLs":[
+            "http://75.100.205.73:3030/"
+        ],
+        "maxPingSeconds": 4,
+        "uploadURL": "upload",
+        "downloadURL": "download",
+        "getIDURL": "getID",
+        "infoURL": "getInfo"
+    },
+    [
+    ]
+]
+
 if os.name == 'nt':  # 'nt' represents Windows
     print("Running on Windows")
     dirSeperator = "\\"
@@ -150,8 +166,8 @@ def findServer(possibleURLs):
             response = requests.get(possibleURL + "ping", timeout=maxPingSeconds)
             worked = True
             text = response.text
-        except:
-            setStatus(possibleURL + " is offline, checking next...")
+        except Exception as e:
+            setStatus(possibleURL + " had an error:", e)
         
         if worked and text == "pong":
             baseURL = possibleURL
@@ -165,9 +181,6 @@ def findServer(possibleURLs):
             currentIDURL = baseURL + currentIDKey
             infoURL = baseURL + infoKey
             return
-        else:
-            setStatus(possibleURL + " is offline, checking next...")
-        
             
     setStatus("Could not find an online server ):")
     server_label.config(text="None ):")
@@ -175,23 +188,30 @@ def findServer(possibleURLs):
 
 def loadConfig():
     global config, saves, uploadKey, downloadKey, currentIDKey, infoKey, maxPingSeconds
-    with open(config_dir, 'r') as configFile:
-        allConfig = json.load(configFile)
-        
-        config = allConfig[1]
-        
-        settingsConfig = allConfig[0]
-        maxPingSeconds = settingsConfig["maxPingSeconds"]
-        uploadKey = settingsConfig["uploadURL"]
-        downloadKey = settingsConfig["downloadURL"]
-        currentIDKey = settingsConfig["getIDURL"]
-        infoKey = settingsConfig["infoURL"]
-        baseURLs = settingsConfig["baseURLs"]
-        
-    #this is just for displaying saves
-    saves = []
-    for saveData in config:
-        saves.append(saveData["name"])
+    try:
+        with open(config_dir, 'r') as configFile:
+            allConfig = json.load(configFile)
+            
+            config = allConfig[1]
+            
+            settingsConfig = allConfig[0]
+            maxPingSeconds = settingsConfig["maxPingSeconds"]
+            uploadKey = settingsConfig["uploadURL"]
+            downloadKey = settingsConfig["downloadURL"]
+            currentIDKey = settingsConfig["getIDURL"]
+            infoKey = settingsConfig["infoURL"]
+            baseURLs = settingsConfig["baseURLs"]
+            
+        #this is just for displaying saves
+        saves = []
+        for saveData in config:
+            saves.append(saveData["name"])
+    except Exception as e:
+        print("Config error:", e, "\nresetting to default config")
+        allConfig = defaultConfig
+        with open(config_dir, 'w') as configFile:
+            json.dump(allConfig, configFile, indent=4)
+        return loadConfig() #this could get bad, but I hope not lol
     
     return baseURLs
 
